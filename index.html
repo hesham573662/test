@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PoC - moment.js Vulnerability</title>
+  <script src="moment.js"></script>
+</head>
+<body>
+  <h2>PoC - Vulnerable moment.js (v2.17.1)</h2>
+  <pre id="output"></pre>
+
+  <script>
+    const invalidDate = moment("2025-13-99", "YYYY-MM-DD");
+    const spoofedZone = moment.parseZone("2025-07-13T12:00:00+99:99");
+
+    const output = `
+Detected version: ${moment.version}
+-----------------------------
+📆 Test: moment("2025-13-99").isValid() 
+→ ${invalidDate.isValid()} (should be false)
+
+🕓 Test: moment.parseZone("+99:99").isValid()
+→ ${spoofedZone.isValid()} (should be false)
+    `;
+
+    document.getElementById("output").innerText = output;
+    console.log(output);
+  </script>
+</body>
+</html>
