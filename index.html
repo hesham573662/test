@@ -2,29 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PoC - moment.js Vulnerability</title>
+  <title>PoC - Vulnerable moment.js (v2.17.1)</title>
   <script src="moment.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .test {
+      margin: 20px 0;
+      padding: 10px;
+      border-left: 6px solid #999;
+      background: #f1f1f1;
+    }
+    .pass {
+      color: green;
+      font-weight: bold;
+    }
+    .fail {
+      color: red;
+      font-weight: bold;
+    }
+    code {
+      background: #eee;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-  <h2>PoC - Vulnerable moment.js (v2.17.1)</h2>
-  <pre id="output"></pre>
+  <div class="container">
+    <h1>PoC - Vulnerable <code>moment.js</code> (v2.17.1)</h1>
+    <p><strong>Detected version:</strong> <span id="version"></span></p>
+
+    <div class="test" id="dateTest">
+      <p><strong>📆 Invalid Date Test:</strong></p>
+      <p>Input: <code>moment("2025-13-99", "YYYY-MM-DD").isValid()</code></p>
+      <p id="result1"></p>
+    </div>
+
+    <div class="test" id="zoneTest">
+      <p><strong>🕓 Timezone Spoofing Test:</strong></p>
+      <p>Input: <code>moment.parseZone("2025-07-13T12:00:00+99:99").isValid()</code></p>
+      <p id="result2"></p>
+    </div>
+  </div>
 
   <script>
+    document.getElementById("version").innerText = moment.version;
+
+    // Test 1: Invalid Date
     const invalidDate = moment("2025-13-99", "YYYY-MM-DD");
-    const spoofedZone = moment.parseZone("2025-07-13T12:00:00+99:99");
+    const result1 = invalidDate.isValid();
 
-    const output = `
-Detected version: ${moment.version}
------------------------------
-📆 Test: moment("2025-13-99").isValid() 
-→ ${invalidDate.isValid()} (should be false)
+    if (result1) {
+      document.getElementById("result1").innerHTML =
+        `<span class="fail">❌ Failed: Invalid date accepted → ${invalidDate.format()}</span>`;
+    } else {
+      document.getElementById("result1").innerHTML =
+        `<span class="pass">✅ Passed: Invalid date was correctly rejected</span>`;
+    }
 
-🕓 Test: moment.parseZone("+99:99").isValid()
-→ ${spoofedZone.isValid()} (should be false)
-    `;
+    // Test 2: Invalid Timezone
+    const spoofed = moment.parseZone("2025-07-13T12:00:00+99:99");
+    const result2 = spoofed.isValid();
 
-    document.getElementById("output").innerText = output;
-    console.log(output);
+    if (result2) {
+      document.getElementById("result2").innerHTML =
+        `<span class="fail">❌ Failed: Invalid timezone accepted → ${spoofed.format()}</span>`;
+    } else {
+      document.getElementById("result2").innerHTML =
+        `<span class="pass">✅ Passed: Invalid timezone was correctly rejected</span>`;
+    }
+
+    console.log("moment.version =", moment.version);
+    console.log("Test 1 (Invalid Date) result:", result1);
+    console.log("Test 2 (Invalid Timezone) result:", result2);
   </script>
 </body>
 </html>
